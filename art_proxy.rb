@@ -1,4 +1,4 @@
-#! /usr/local/bin/ruby
+#! /usr/bin/env ruby
 # encoding: utf-8
 
 require "webrick"
@@ -18,7 +18,7 @@ $STORE_BAG_XML = '<?xml version="1.0" encoding="UTF-8" standalone="no"?>
 					<key>storeFront</key><string>http://ax.phobos.apple.com.edgesuite.net/WebObjects/MZStore.woa/wa/storeFront</string>
 					<key>newUserStoreFront</key><string>http://ax.phobos.apple.com.edgesuite.net/WebObjects/MZStore.woa/wa/storeFront</string>
 					<key>newIPodUserStoreFront</key><string>http://ax.phobos.apple.com.edgesuite.net/WebObjects/MZStore.woa/wa/newIPodUser?newIPodUser=true</string>
-					<key>newPhoneUser</key><string>http://ax.phobos.apple.com.edgesuite.net/WebObjects/MZStore.woa/wa/phoneLandingPage</string>									 
+					<key>newPhoneUser</key><string>http://ax.phobos.apple.com.edgesuite.net/WebObjects/MZStore.woa/wa/phoneLandingPage</string>
 					<key>search</key><string>http://ax.phobos.apple.com.edgesuite.net/WebObjects/MZSearch.woa/wa/DirectAction/search</string>
 					<key>advancedSearch</key><string>http://ax.phobos.apple.com.edgesuite.net/WebObjects/MZSearch.woa/wa/DirectAction/advancedSearch</string>
 					<key>parentalAdvisory</key><string>http://ax.phobos.apple.com.edgesuite.net/WebObjects/MZStore.woa/wa/parentalAdvisory</string>
@@ -197,7 +197,8 @@ set_proxy_conf
 
 
 def configure_proxy(opts = {})
-	proxy = WEBrick::HTTPProxyServer.new(
+	proxy = nil
+	opts = {
 		:Port => 4001,
 		:RequestCallback => Proc.new{|req, res|
 			puts "Host: "+req['host']
@@ -213,7 +214,8 @@ def configure_proxy(opts = {})
 			end
 			puts '-'*88
 		}
-	)
+	}.merge(opts)
+	proxy = WEBrick::HTTPProxyServer.new(opts)
 
 	serve = HTTPServlet::ProcHandler.new(@serve_proc)
 	store_bag = HTTPServlet::ProcHandler.new(@store_bag_proc)
@@ -229,10 +231,17 @@ def configure_proxy(opts = {})
 	end
 
 	proxy.start
-
 end
 
-configure_proxy
+# configure_proxy
+configure_proxy({
+	:SSLEnable => true,
+	:SSLVerifyClient => OpenSSL::SSL::VERIFY_NONE,
+	:SSLPrivateKey => OpenSSL::PKey::RSA.new(File.open("apple.cert.key").read),
+	:SSLCertificate => OpenSSL::X509::Certificate.new(File.open("apple.cert.crt").read),
+	:SSLCertName => [["CN", WEBrick::Utils::getservername]],
+	:Port => 4002
+})
 
 trap("INT") do
 	reset_proxy_conf
