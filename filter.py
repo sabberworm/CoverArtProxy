@@ -36,7 +36,9 @@ def artwork_query_request(context, flow):
         artist = query["aan"][0] if ("aan" in query) else query["an"][0]
         album = query["pn"][0]
         request_mapping[flow.request] = (artist, album)
-        # Use something we’re sure will yield a correct response
+        # We can’t intercept the response to this request as there’s some kind of checksum in it.
+        # But we can intercept the response to the image being served for this request.
+        # So we need to use something we’re sure will yield a correct response.
         query["aan"] = query["an"] = ("Britney Spears",)
         query["pn"] = ("Britney",)
         query["dummy"] = (artist, album)
