@@ -5,7 +5,7 @@ import os
 import glob
 import sys
 
-my_album_art_folder = "/Users/rafi/Music/Artworks"
+my_album_art_folder = os.path.abspath("./Artworks")
 
 extensions = {'jpg': 'image/jpeg', 'jpeg': 'image/jpeg', 'png': 'image/png', 'gif': 'image/gif'}
 
@@ -28,14 +28,18 @@ def request(context, flow):
 def artwork_query_request(context, flow):
     query = flow.request.get_query()
     if not ("an" in query):
-        return
-    artist = query["aan"][0] if ("aan" in query) else query["an"][0]
-    album = query["pn"][0]
-    request_mapping[flow.request] = (artist, album)
-    # Use something we’re sure will yield a correct response
-    query["aan"] = query["an"] = ("Britney Spears",)
-    query["pn"] = ("Britney",)
-    query["dummy"] = (artist, album)
+        # This is for an album downloaded from iTunes, we’ve only got an id for artist and album.
+        # Make sure it comes back with an error so iTunes tries again with names for both.
+        query['a'] = ('Hello',)
+        query['p'] = ('Dude',)
+    else:
+        artist = query["aan"][0] if ("aan" in query) else query["an"][0]
+        album = query["pn"][0]
+        request_mapping[flow.request] = (artist, album)
+        # Use something we’re sure will yield a correct response
+        query["aan"] = query["an"] = ("Britney Spears",)
+        query["pn"] = ("Britney",)
+        query["dummy"] = (artist, album)
     flow.request.set_query(query)
 
 
@@ -56,6 +60,15 @@ def artwork_query_response(context, flow):
         artwork_mapping[artwork_url] = request_mapping[flow.request]
         print artwork_url, 'for', request_mapping[flow.request]
 
+def artwork_folder(artist, album):
+    path = os.path.join(my_album_art_folder, artist, album)
+    if os.path.exists(path):
+        return path
+    path = os.path.join(my_album_art_folder, artist.replace('/', '_'), album.replace('/', '_'))
+    if os.path.exists(path):
+        return path
+    path = os.path.join(my_album_art_folder, artist.replace('/', '_').replace(':', '_'), album.replace('/', '_').replace(':', '_'))
+    return path
 
 def serve_artwork_in_folder(folder, flow):
     files = glob.glob(os.path.join(folder, '*.*'))
@@ -76,10 +89,10 @@ def serve_artwork_in_folder(folder, flow):
 
 def artwork_serve_response(context, artwork_info, flow):
     print "Trying to get artwork for", artwork_info
-    if serve_artwork_in_folder(os.path.join(my_album_art_folder, artwork_info[0], artwork_info[1]), flow):
+    if serve_artwork_in_folder(artwork_folder(artwork_info[0], artwork_info[1]), flow):
         print "Found exact match"
         return
-    if serve_artwork_in_folder(os.path.join(my_album_art_folder, "Compilations", artwork_info[1]), flow):
+    if serve_artwork_in_folder(artwork_folder("Compilation", artwork_info[1]), flow):
         print "Found compilation match"
         return
     print "No match found"
