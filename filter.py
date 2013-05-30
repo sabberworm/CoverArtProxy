@@ -75,7 +75,7 @@ def artwork_folder(artist, album):
 def serve_artwork_in_folder(folder, flow):
     files = glob.glob(os.path.join(folder, '*.*'))
     for file in files:
-        extension = file.rpartition('.')[2]
+        extension = file.rpartition('.')[2].lower()
         if not extension in extensions:
             continue
         print "Outputting file " + file
