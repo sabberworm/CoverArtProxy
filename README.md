@@ -11,7 +11,7 @@ Have `mitmproxy` or `mitmdump` installed. Have a directory (or symlink) ready na
 ## Installation
 
 * Run the included `run.sh` script once and end it with `ctrl+c`.
-* The script should have run `mitmdump`, which should have generated a fake root-ca. Import this into your keychain and to have the system trust it.
+* The script should have run `mitmdump`, which should have generated a fake root-ca. Import this into your keychain to have the system trust it.
 * Run `run.sh` again with a `$CWD` that contains your `Artworks` dir.
 * Have iTunes download cover artwork and enjoy.
 
