@@ -12,7 +12,7 @@ extensions = {'jpg': 'image/jpeg', 'jpeg': 'image/jpeg', 'png': 'image/png', 'gi
 artwork_mapping = {}
 request_mapping = {}
 
-def start(context):
+def start(context, argv):
     Popen(("scselect", "CoverArtProxy"))
 
 
