@@ -1,23 +1,39 @@
 #coding=utf-8
 from subprocess import Popen
+from subprocess import check_output
 from libmproxy.flow import decoded
 import os
+import re
 import glob
 import sys
 
-my_album_art_folder = os.path.abspath("./Artworks")
-
-extensions = {'jpg': 'image/jpeg', 'jpeg': 'image/jpeg', 'png': 'image/png', 'gif': 'image/gif'}
+SET_PATTERN = re.compile(r'([a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12})\s*\((.*)\)', re.IGNORECASE)
+MY_ALBUM_ART_FOLDER = os.path.abspath("./")
+EXTENSIONS = {'jpg': 'image/jpeg', 'jpeg': 'image/jpeg', 'png': 'image/png', 'gif': 'image/gif'}
 
 artwork_mapping = {}
 request_mapping = {}
+previous_location = None
 
 def start(context, argv):
+    global previous_location
+    out = check_output("scselect", universal_newlines=True)
+    sets = out.splitlines()[1:]
+    for network_set in sets:
+        network_set = network_set.strip()
+        is_selected = network_set.startswith('*')
+        if not is_selected:
+            continue
+        network_set = SET_PATTERN.search(network_set)
+        if not network_set:
+            continue
+        previous_location = network_set.group(1)
+        break
     Popen(("scselect", "CoverArtProxy"))
 
-
 def done(context):
-    Popen(("scselect", "Automatic"))
+    if previous_location is not None:
+        Popen(("scselect", previous_location))
 
 
 def request(context, flow):
@@ -30,8 +46,8 @@ def artwork_query_request(context, flow):
     if not ("an" in query):
         # This is for an album downloaded from iTunes, we’ve only got an id for artist and album.
         # Make sure it comes back with an error so iTunes tries again with names for both.
-        query['a'] = ('Hello',)
-        query['p'] = ('Dude',)
+        query['a'] = ('B8jOURYtHxYv',)
+        query['p'] = ('Qpfz0SDV4Xgr',)
     else:
         artist = query["aan"][0] if ("aan" in query) else query["an"][0]
         album = query["pn"][0]
@@ -63,26 +79,26 @@ def artwork_query_response(context, flow):
         print artwork_url, 'for', request_mapping[flow.request]
 
 def artwork_folder(artist, album):
-    path = os.path.join(my_album_art_folder, artist, album)
+    path = os.path.join(MY_ALBUM_ART_FOLDER, artist, album)
     if os.path.exists(path):
         return path
-    path = os.path.join(my_album_art_folder, artist.replace('/', '_'), album.replace('/', '_'))
+    path = os.path.join(MY_ALBUM_ART_FOLDER, artist.replace('/', '_'), album.replace('/', '_'))
     if os.path.exists(path):
         return path
-    path = os.path.join(my_album_art_folder, artist.replace('/', '_').replace(':', '_'), album.replace('/', '_').replace(':', '_'))
+    path = os.path.join(MY_ALBUM_ART_FOLDER, artist.replace('/', '_').replace(':', '_'), album.replace('/', '_').replace(':', '_'))
     return path
 
 def serve_artwork_in_folder(folder, flow):
     files = glob.glob(os.path.join(folder, '*.*'))
     for file in files:
         extension = file.rpartition('.')[2].lower()
-        if not extension in extensions:
+        if not extension in EXTENSIONS:
             continue
         print "Outputting file " + file
         response = flow.response
         with decoded(response):
             with open(file) as fptr:
-                response.headers["Content-Type"] = (extensions[extension],)
+                response.headers["Content-Type"] = (EXTENSIONS[extension],)
                 response.content = fptr.read()
                 response.code = 200
                 return True

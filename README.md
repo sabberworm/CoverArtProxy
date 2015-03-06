@@ -6,13 +6,13 @@ Putting artwork directly into the audio files blows them up unnecessarily. Loadi
 
 ## Prerequisites
 
-Have [`mitmproxy`](http://mitmproxy.org/) or `mitmdump` installed. Have a directory (or symlink) ready named “Artworks” containing the following structure: `Artist/Album/image`. Images may be either in JPEG, GIF or PNG formats. You also need to have two Network locations ready, “Automatic” and “CoverArtProxy”, with CoverArtProxy having configured HTTP and HTTPS proxies to localhost, port 8080.
+Have [`mitmproxy`](http://mitmproxy.org/) or `mitmdump` installed. Have a directory ready that contains the following structure: `Artist/Album/image`. Images may be either in JPEG, GIF or PNG formats. You also need to have a Network location “CoverArtProxy” ready that configures HTTP and HTTPS proxies to localhost, port 8080.
 
 ## Installation
 
 * Run the included `run.sh` script once and end it with `ctrl+c`.
 * The script should have run `mitmdump`, which should have generated a fake root-ca. Import this into your keychain to have the system trust it.
-* Run `run.sh` again with a `$CWD` that contains your `Artworks` dir.
+* Run `run.sh` again with a `$CWD` that points to your artworks dir (see above).
 * Have iTunes download cover artwork and enjoy.
 
 ## Configuration
