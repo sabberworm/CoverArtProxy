@@ -1,7 +1,7 @@
 #coding=utf-8
 from subprocess import Popen
 from subprocess import check_output
-from libmproxy.flow import decoded
+from libmproxy.protocol.http import decoded
 import os
 import re
 import glob
@@ -46,8 +46,8 @@ def artwork_query_request(context, flow):
     if not ("an" in query):
         # This is for an album downloaded from iTunes, we’ve only got an id for artist and album.
         # Make sure it comes back with an error so iTunes tries again with names for both.
-        query['a'] = ('B8jOURYtHxYv',)
-        query['p'] = ('Qpfz0SDV4Xgr',)
+        query['a'] = ['B8jOURYtHxYv',]
+        query['p'] = ['Qpfz0SDV4Xgr',]
     else:
         artist = query["aan"][0] if ("aan" in query) else query["an"][0]
         album = query["pn"][0]
@@ -55,17 +55,17 @@ def artwork_query_request(context, flow):
         # We can’t intercept the response to this request as there’s some kind of checksum in it.
         # But we can intercept the response to the image being served for this request.
         # So we need to use something we’re sure will yield a correct response.
-        query["aan"] = query["an"] = ("Britney Spears",)
-        query["pn"] = ("Britney",)
-        query["dummy"] = (artist, album)
+        query["aan"] = query["an"] = ["Britney Spears",]
+        query["pn"] = ["Britney",]
+        query["dummy"] = [artist, album]
     flow.request.set_query(query)
 
 
 def response(context, flow):
     if flow.request.path.startswith("/WebObjects/MZStoreServices.woa/wa/coverArtMatch"):
         return artwork_query_response(context, flow)
-    if flow.request.get_url() in artwork_mapping:
-        return artwork_serve_response(context, artwork_mapping[flow.request.get_url()], flow)
+    if flow.request.url in artwork_mapping:
+        return artwork_serve_response(context, artwork_mapping[flow.request.url], flow)
 
 
 def artwork_query_response(context, flow):
@@ -98,7 +98,7 @@ def serve_artwork_in_folder(folder, flow):
         response = flow.response
         with decoded(response):
             with open(file) as fptr:
-                response.headers["Content-Type"] = (EXTENSIONS[extension],)
+                response.headers["Content-Type"] = [EXTENSIONS[extension],]
                 response.content = fptr.read()
                 response.code = 200
                 return True
@@ -106,7 +106,7 @@ def serve_artwork_in_folder(folder, flow):
 
 
 def artwork_serve_response(context, artwork_info, flow):
-    print "Trying to get artwork for", artwork_info
+    print "Trying to get artwork for", artwork_info[0], "–", artwork_info[1]
     if serve_artwork_in_folder(artwork_folder(artwork_info[0], artwork_info[1]), flow):
         print "Found exact match"
         return
