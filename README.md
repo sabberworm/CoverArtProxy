@@ -6,7 +6,7 @@ Putting artwork directly into the audio files blows them up unnecessarily. Loadi
 
 ## Prerequisites
 
-Have [`mitmproxy`](http://mitmproxy.org/) 0.18 or `mitmdump` installed. Have a directory ready that contains the following structure: `Artist/Album/image`. Images may be either in JPEG, GIF or PNG formats. You also need to have a Network location “CoverArtProxy” ready that configures HTTP and HTTPS proxies to localhost, port 8080.
+Have [`mitmproxy`](http://mitmproxy.org/) 4.0 (other versions may work) or `mitmdump` installed. Have a directory ready that contains the following structure: `Artist/Album/image`. Images may be either in JPEG, GIF or PNG formats. You also need to have a Network location “CoverArtProxy” ready that configures HTTP and HTTPS proxies to localhost, port 8080.
 
 ## Installation
 
