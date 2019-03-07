@@ -1,4 +1,6 @@
-mitmproxy-ca*
+/mitmproxy-ca*
+/mitmproxy-dhparam.pem
 Artworks
-
 .DS_Store
+/.vscode/
+/__pycache__/
