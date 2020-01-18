@@ -1,12 +1,12 @@
 #coding=utf-8
-import mitmproxy.addonmanager
-
-from subprocess import Popen
-from subprocess import check_output
+import glob
 import os
 import re
-import glob
 import sys
+import unicodedata
+from subprocess import Popen, check_output
+
+import mitmproxy.addonmanager
 
 SET_PATTERN = re.compile(r'([a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12})\s*\((.*)\)', re.IGNORECASE)
 MY_ALBUM_ART_FOLDER = os.path.abspath("./")
@@ -84,6 +84,7 @@ def artwork_folder(artist, album):
     return path
 
 def serve_artwork_in_folder(folder, flow):
+    folder = unicodedata.normalize('NFD', folder)
     files = glob.glob(os.path.join(folder, '*.*'))
     for file in files:
         extension = file.rpartition('.')[2].lower()

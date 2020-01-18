@@ -6,10 +6,10 @@
 	"configurations": [
 		{
 			"name": "Python: Current File (External Terminal)",
-			"cwd": "/Users/rafi/Music/Artworks",
+			"cwd": "/Volumes/data/Music/Artworks",
 			"type": "python",
 			"request": "launch",
-			"program": "/usr/local/bin/mitmdump",
+			"program": "${workspaceFolder}/env/bin/mitmproxy",
 			"args": [
 				"--set",
 				"confdir=${workspaceFolder}",
